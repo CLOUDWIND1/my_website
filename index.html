@@ -6,184 +6,336 @@
   <title>香韵拼图 · 400年工艺解密</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: #f6f1eb;
       text-align: center;
       margin: 0;
-      padding: 10px;
-      touch-action: manipulation; /* Prevents zoom on double tap, good for touch games */
+      padding: 15px; /* Increased padding for body */
+      touch-action: manipulation;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 95vh; /* Ensure content can fill height */
     }
     h1 {
       color: #5a3825;
-      font-size: 1.5rem;
-      margin: 10px 0;
+      font-size: 1.6rem; /* Slightly increased */
+      margin: 10px 0 15px 0; /* Adjusted margin */
+    }
+    #timerDisplay {
+      font-size: 1.3rem; /* Increased size */
+      margin-bottom: 15px;
+      color: #5a3825;
+      font-weight: bold;
     }
     #game {
       display: grid;
-      grid-template-columns: repeat(3, 28vw); /* Responsive columns */
-      grid-template-rows: repeat(3, 28vw);    /* Responsive rows */
-      gap: 1vw; /* Responsive gap */
-      margin: 2vh auto; /* Vertical and horizontal centering margin */
-      width: calc(28vw * 3 + 1vw * 2); /* Explicit width for better control */
-      max-width: 500px; /* Max width for larger screens */
-      aspect-ratio: 1 / 1; /* Keep it square */
+      grid-template-columns: repeat(3, 28vw);
+      grid-template-rows: repeat(3, 28vw);
+      gap: 1.5vw; /* Slightly increased gap */
+      margin: 0 auto 20px auto; /* Adjusted margin */
+      width: calc(28vw * 3 + 1.5vw * 2);
+      max-width: 450px; /* Adjusted max-width */
+      aspect-ratio: 1 / 1;
+      background-color: #e0d8cf; /* Added a subtle background to the game area */
+      padding: 1.5vw; /* Padding around tiles */
+      border-radius: 8px; /* Rounded corners for game area */
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Subtle shadow */
     }
     .tile {
       width: 100%;
       height: 100%;
-      border: 1px solid #ccc;
+      border: 1px solid #bcaaa4; /* Softer border color */
       box-sizing: border-box;
-      background-size: cover; /* Ensure image covers the tile */
-      background-position: center; /* Center the image */
-      touch-action: manipulation; /* For better touch interaction on tiles */
+      background-size: cover;
+      background-position: center;
+      touch-action: manipulation;
       cursor: pointer;
-      user-select: none; /* Prevent text selection on tiles */
+      user-select: none;
+      border-radius: 4px; /* Rounded corners for tiles */
+      transition: transform 0.1s ease-out; /* For potential future hover/active effects */
+    }
+    .tile:active {
+        transform: scale(0.95); /* Simple active effect */
     }
     .empty {
-      background: #eee;
+      background: #d7ccc8; /* Softer empty tile color */
       cursor: default;
     }
+    .empty:active {
+        transform: none; /* No active effect for empty tile */
+    }
     button {
-      margin-top: 2vh;
-      padding: 12px 24px; /* Adjusted padding */
+      margin-top: 10px; /* Reduced margin for buttons if close */
+      padding: 12px 25px;
       background: #8c5b3a;
       color: white;
       border: none;
-      border-radius: 5px;
-      font-size: 1rem; /* Relative font size */
+      border-radius: 6px; /* Slightly more rounded */
+      font-size: 1rem;
       cursor: pointer;
-      min-width: 150px; /* Minimum width */
+      min-width: 160px; /* Min width for buttons */
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #794f30;
     }
 
-    /* Media query for larger screens like tablets/desktops */
-    @media (min-width: 600px) { /* Breakpoint chosen arbitrarily, adjust as needed */
+    #successOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6); /* Darker overlay */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 15px;
+      box-sizing: border-box;
+    }
+    .success-content {
+      background-color: #f6f1eb;
+      padding: 25px 30px; /* Increased padding */
+      border-radius: 10px;
+      text-align: center;
+      color: #5a3825;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+      width: 90%;
+      max-width: 350px; /* Max width for success content */
+    }
+    .success-content h2 {
+      font-size: 1.8rem;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    .success-content p {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+    #successOverlay button {
+      margin-top: 20px;
+    }
+
+    /* Media query for larger screens */
+    @media (min-width: 600px) {
+      h1 { font-size: 2rem; margin-bottom: 20px;}
+      #timerDisplay { font-size: 1.5rem; margin-bottom: 20px;}
       #game {
-        grid-template-columns: repeat(3, 120px); /* Fixed size for larger screens */
-        grid-template-rows: repeat(3, 120px);    /* Fixed size for larger screens */
-        gap: 5px;
-        width: calc(120px * 3 + 5px * 2);
+        grid-template-columns: repeat(3, 110px);
+        grid-template-rows: repeat(3, 110px);
+        gap: 6px;
+        width: calc(110px * 3 + 6px * 2);
+        padding: 6px;
       }
-      h1 {
-        font-size: 2rem;
-      }
-      button {
-        font-size: 1.1rem;
-        padding: 15px 30px;
-      }
+      .tile { border-radius: 6px; }
+      button { font-size: 1.1rem; padding: 14px 30px; min-width: 180px;}
+      .success-content h2 { font-size: 2.2rem; }
+      .success-content p { font-size: 1.2rem; }
     }
   </style>
 </head>
 <body>
   <h1>香韵拼图</h1>
+  <div id="timerDisplay">时间: 3:00</div>
   <div id="game"></div>
-  <button onclick="shuffle()">打乱拼图</button>
+  <button id="shuffleButton">打乱并开始</button>
+
+  <div id="successOverlay" style="display: none;">
+    <div class="success-content">
+      <h2>恭喜！</h2>
+      <p>你成功完成了拼图！</p>
+      <p>用时: <span id="timeTaken"></span></p>
+      <button id="playAgainButton">再玩一次</button>
+    </div>
+  </div>
 
   <script>
-    const game = document.getElementById('game');
-    // This array holds the current state of the puzzle.
-    // 'null' represents the empty space.
-    let currentTileArrangement = [
+    const gameElement = document.getElementById('game');
+    const shuffleButton = document.getElementById('shuffleButton');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const successOverlay = document.getElementById('successOverlay');
+    const playAgainButton = document.getElementById('playAgainButton');
+    const timeTakenSpan = document.getElementById('timeTaken');
+
+    const IMAGE_NAMES = [
       'tile_0_0.png', 'tile_0_1.png', 'tile_0_2.png',
       'tile_1_0.png', 'tile_1_1.png', 'tile_1_2.png',
-      'tile_2_0.png', 'tile_2_1.png', null // The last tile is initially empty
+      'tile_2_0.png', 'tile_2_1.png'
     ];
+    const GRID_SIZE = 3;
+    const TOTAL_TILES = GRID_SIZE * GRID_SIZE;
+    const INITIAL_TIME = 180; // 3 minutes in seconds
 
-    // This function renders the puzzle based on the currentTileArrangement.
+    let currentTileArrangement = [];
+    let solvedState = [];
+    let timeLeft = INITIAL_TIME;
+    let timerInterval = null;
+    let gameActive = false;
+
+    function initializePuzzle() {
+      gameActive = false;
+      solvedState = [...IMAGE_NAMES, null]; // Solved state has null at the end
+      currentTileArrangement = [...solvedState];
+      createAndRenderTiles();
+      resetTimer(INITIAL_TIME);
+      if (successOverlay) successOverlay.style.display = 'none';
+    }
+
     function createAndRenderTiles() {
-      game.innerHTML = ''; // Clear the game board
-
+      gameElement.innerHTML = '';
       currentTileArrangement.forEach((imageName, index) => {
         const div = document.createElement('div');
         div.className = 'tile';
-        if (imageName) { // If it's an image path, not null
+        if (imageName) {
           div.style.backgroundImage = `url('${imageName}')`;
-          // div.dataset.originalIndex = imageName; // Optional: if you need to track original piece
         } else {
           div.classList.add('empty');
         }
-        // 'index' is the current position (0-8) of this tile/empty space in the grid.
         div.addEventListener('click', () => moveTile(index));
-        game.appendChild(div);
+        gameElement.appendChild(div);
       });
     }
 
-    // 'clickedIndex' is the 0-8 grid position of the tile the user clicked.
     function moveTile(clickedIndex) {
+      if (!gameActive || currentTileArrangement[clickedIndex] === null) return;
+
       const emptyIndex = currentTileArrangement.indexOf(null);
 
-      // Determine row and column for clicked and empty tiles
-      const clickedRow = Math.floor(clickedIndex / 3);
-      const clickedCol = clickedIndex % 3;
-      const emptyRow = Math.floor(emptyIndex / 3);
-      const emptyCol = emptyIndex % 3;
+      const clickedRow = Math.floor(clickedIndex / GRID_SIZE);
+      const clickedCol = clickedIndex % GRID_SIZE;
+      const emptyRow = Math.floor(emptyIndex / GRID_SIZE);
+      const emptyCol = emptyIndex % GRID_SIZE;
 
-      // Check if the clicked tile is adjacent (not diagonally) to the empty space
       const isAdjacent =
-        (Math.abs(clickedRow - emptyRow) === 1 && clickedCol === emptyCol) || // Same column, row difference is 1
-        (Math.abs(clickedCol - emptyCol) === 1 && clickedRow === emptyRow);   // Same row, column difference is 1
+        (Math.abs(clickedRow - emptyRow) === 1 && clickedCol === emptyCol) ||
+        (Math.abs(clickedCol - emptyCol) === 1 && clickedRow === emptyRow);
 
       if (isAdjacent) {
-        // Swap the clicked tile with the empty space in our state array
         [currentTileArrangement[clickedIndex], currentTileArrangement[emptyIndex]] =
         [currentTileArrangement[emptyIndex], currentTileArrangement[clickedIndex]];
-
-        createAndRenderTiles(); // Re-render the board with the new arrangement
-
-        // Optional: Check for win condition here
-        // if (isSolved()) { alert("恭喜你，完成了！"); }
+        createAndRenderTiles();
+        if (isSolved()) {
+          handleWin();
+        }
       }
     }
 
-    function shuffle() {
-      // To shuffle, we make a series of random valid moves.
-      // This ensures the puzzle remains solvable.
-      const numberOfShuffles = 100 + Math.floor(Math.random() * 50); // More shuffles for better randomness
+    function isSolved() {
+      for (let i = 0; i < TOTAL_TILES; i++) {
+        if (currentTileArrangement[i] !== solvedState[i]) {
+          return false;
+        }
+      }
+      return true;
+    }
 
-      for (let i = 0; i < numberOfShuffles; i++) {
+    function shuffleAndStart() {
+      initializePuzzle(); // Reset to solved state first
+
+      // Perform a series of random valid moves to shuffle
+      // This ensures the puzzle is always solvable
+      const shuffleMoves = 100 + Math.floor(Math.random() * 50);
+      for (let i = 0; i < shuffleMoves; i++) {
         const emptyIndex = currentTileArrangement.indexOf(null);
-        const possibleMoves = []; // Stores indices of tiles that can slide into the empty space
+        const possibleMoves = [];
+        const emptyRow = Math.floor(emptyIndex / GRID_SIZE);
+        const emptyCol = emptyIndex % GRID_SIZE;
 
-        // Determine row and column for the empty space
-        const emptyRow = Math.floor(emptyIndex / 3);
-        const emptyCol = emptyIndex % 3;
-
-        // Check tile to the left of empty
-        if (emptyCol > 0) possibleMoves.push(emptyIndex - 1);
-        // Check tile to the right of empty
-        if (emptyCol < 2) possibleMoves.push(emptyIndex + 1);
-        // Check tile above empty
-        if (emptyRow > 0) possibleMoves.push(emptyIndex - 3);
-        // Check tile below empty
-        if (emptyRow < 2) possibleMoves.push(emptyIndex + 3);
+        if (emptyCol > 0) possibleMoves.push(emptyIndex - 1); // Left
+        if (emptyCol < GRID_SIZE - 1) possibleMoves.push(emptyIndex + 1); // Right
+        if (emptyRow > 0) possibleMoves.push(emptyIndex - GRID_SIZE); // Up
+        if (emptyRow < GRID_SIZE - 1) possibleMoves.push(emptyIndex + GRID_SIZE); // Down
 
         if (possibleMoves.length > 0) {
-          // Pick a random, valid tile to move into the empty space
-          const tileToMoveIndex = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-          // Perform the swap in the state array
-          [currentTileArrangement[emptyIndex], currentTileArrangement[tileToMoveIndex]] =
-          [currentTileArrangement[tileToMoveIndex], currentTileArrangement[emptyIndex]];
+          const randomMoveIndex = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+          // Swap in the currentTileArrangement directly
+          [currentTileArrangement[emptyIndex], currentTileArrangement[randomMoveIndex]] =
+          [currentTileArrangement[randomMoveIndex], currentTileArrangement[emptyIndex]];
         }
       }
-      createAndRenderTiles(); // Re-render the board with the shuffled state
-    }
 
-    // Optional: Function to check if the puzzle is solved
-    function isSolved() {
-        const solvedState = [
-            'tile_0_0.png', 'tile_0_1.png', 'tile_0_2.png',
-            'tile_1_0.png', 'tile_1_1.png', 'tile_1_2.png',
-            'tile_2_0.png', 'tile_2_1.png', null
-        ];
-        for (let i = 0; i < currentTileArrangement.length; i++) {
-            if (currentTileArrangement[i] !== solvedState[i]) {
-                return false;
-            }
+      // Ensure the shuffled state is not already solved (rare, but possible)
+      if (isSolved()) {
+        // If still solved, perform a minimal swap to unsolve it if possible
+        // e.g., swap last two non-empty tiles if array allows
+        if (currentTileArrangement.length >=2 && currentTileArrangement[TOTAL_TILES-2] && currentTileArrangement[TOTAL_TILES-3]) {
+             [currentTileArrangement[TOTAL_TILES-2], currentTileArrangement[TOTAL_TILES-3]] =
+             [currentTileArrangement[TOTAL_TILES-3], currentTileArrangement[TOTAL_TILES-2]];
         }
-        return true;
+      }
+
+
+      createAndRenderTiles();
+      resetTimer(INITIAL_TIME);
+      startTimer();
+      gameActive = true;
+      if (successOverlay) successOverlay.style.display = 'none';
     }
 
-    // Initial call to display the puzzle when the page loads.
-    createAndRenderTiles();
+    function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function resetTimer(startTimeInSeconds) {
+      clearInterval(timerInterval);
+      timeLeft = startTimeInSeconds;
+      if (timerDisplay) {
+        timerDisplay.textContent = `时间: ${formatTime(timeLeft)}`;
+        timerDisplay.style.color = '#5a3825'; // Reset color
+      }
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      gameActive = true;
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        if (timerDisplay) timerDisplay.textContent = `时间: ${formatTime(timeLeft)}`;
+
+        if (timeLeft <= 10 && timeLeft > 0) {
+             if (timerDisplay) timerDisplay.style.color = 'red';
+        }
+
+        if (timeLeft <= 0) {
+          handleTimeUp();
+        }
+      }, 1000);
+    }
+
+    function handleWin() {
+      clearInterval(timerInterval);
+      gameActive = false;
+      const timeSpent = INITIAL_TIME - timeLeft;
+      if (timeTakenSpan) timeTakenSpan.textContent = formatTime(timeSpent);
+      if (successOverlay) successOverlay.style.display = 'flex';
+    }
+
+    function handleTimeUp() {
+      clearInterval(timerInterval);
+      gameActive = false;
+      if (timerDisplay) {
+        timerDisplay.textContent = "时间到!";
+        timerDisplay.style.color = 'red';
+      }
+      // Optionally, show a different overlay for time up
+      setTimeout(() => { // Give user a moment to see "时间到!"
+        alert("时间到了！点击“打乱并开始”再试一次吧。");
+      }, 100);
+    }
+
+    // Event Listeners
+    shuffleButton.addEventListener('click', shuffleAndStart);
+    playAgainButton.addEventListener('click', () => {
+        if (successOverlay) successOverlay.style.display = 'none';
+        shuffleAndStart();
+    });
+
+    // Initial Setup
+    initializePuzzle();
   </script>
 </body>
 </html>
