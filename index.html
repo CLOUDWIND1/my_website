@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -12,7 +11,7 @@
       text-align: center;
       margin: 0;
       padding: 10px;
-      touch-action: manipulation;
+      touch-action: manipulation; /* Prevents zoom on double tap, good for touch games */
     }
     h1 {
       color: #5a3825;
@@ -21,43 +20,57 @@
     }
     #game {
       display: grid;
-      grid-template-columns: repeat(3, 28vw);
-      grid-template-rows: repeat(3, 28vw);
-      gap: 1vw;
-      margin: 2vh auto;
-      max-width: 90vw;
+      grid-template-columns: repeat(3, 28vw); /* Responsive columns */
+      grid-template-rows: repeat(3, 28vw);    /* Responsive rows */
+      gap: 1vw; /* Responsive gap */
+      margin: 2vh auto; /* Vertical and horizontal centering margin */
+      width: calc(28vw * 3 + 1vw * 2); /* Explicit width for better control */
+      max-width: 500px; /* Max width for larger screens */
+      aspect-ratio: 1 / 1; /* Keep it square */
     }
     .tile {
       width: 100%;
       height: 100%;
       border: 1px solid #ccc;
       box-sizing: border-box;
-      touch-action: manipulation;
+      background-size: cover; /* Ensure image covers the tile */
+      background-position: center; /* Center the image */
+      touch-action: manipulation; /* For better touch interaction on tiles */
+      cursor: pointer;
+      user-select: none; /* Prevent text selection on tiles */
     }
     .empty {
       background: #eee;
+      cursor: default;
     }
     button {
       margin-top: 2vh;
-      padding: 2vh 4vw;
+      padding: 12px 24px; /* Adjusted padding */
       background: #8c5b3a;
       color: white;
       border: none;
       border-radius: 5px;
-      font-size: 1rem;
-      min-width: 40vw;
+      font-size: 1rem; /* Relative font size */
+      cursor: pointer;
+      min-width: 150px; /* Minimum width */
     }
 
-    @media (min-width: 768px) {
+    /* Media query for larger screens like tablets/desktops */
+    @media (min-width: 600px) { /* Breakpoint chosen arbitrarily, adjust as needed */
       #game {
-        grid-template-columns: repeat(3, 150px);
-        grid-template-rows: repeat(3, 150px);
+        grid-template-columns: repeat(3, 120px); /* Fixed size for larger screens */
+        grid-template-rows: repeat(3, 120px);    /* Fixed size for larger screens */
+        gap: 5px;
+        width: calc(120px * 3 + 5px * 2);
       }
       h1 {
         font-size: 2rem;
       }
+      button {
+        font-size: 1.1rem;
+        padding: 15px 30px;
+      }
     }
-  </style>
   </style>
 </head>
 <body>
@@ -67,55 +80,110 @@
 
   <script>
     const game = document.getElementById('game');
-    let tiles = [];
+    // This array holds the current state of the puzzle.
+    // 'null' represents the empty space.
+    let currentTileArrangement = [
+      'tile_0_0.png', 'tile_0_1.png', 'tile_0_2.png',
+      'tile_1_0.png', 'tile_1_1.png', 'tile_1_2.png',
+      'tile_2_0.png', 'tile_2_1.png', null // The last tile is initially empty
+    ];
 
-    function createTiles() {
-      const sources = [
-        'tile_0_0.png', 'tile_0_1.png', 'tile_0_2.png',
-        'tile_1_0.png', 'tile_1_1.png', 'tile_1_2.png',
-        'tile_2_0.png', 'tile_2_1.png', 'tile_2_2.png'
-      ];
+    // This function renders the puzzle based on the currentTileArrangement.
+    function createAndRenderTiles() {
+      game.innerHTML = ''; // Clear the game board
 
-      sources[sources.length - 1] = null;
-
-      game.innerHTML = '';
-      tiles = [];
-
-      for (let i = 0; i < 9; i++) {
+      currentTileArrangement.forEach((imageName, index) => {
         const div = document.createElement('div');
         div.className = 'tile';
-        if (sources[i]) {
-          div.style.backgroundImage = `url('${sources[i]}')`;
-          div.style.backgroundSize = 'cover';
-          div.dataset.index = i;
+        if (imageName) { // If it's an image path, not null
+          div.style.backgroundImage = `url('${imageName}')`;
+          // div.dataset.originalIndex = imageName; // Optional: if you need to track original piece
         } else {
           div.classList.add('empty');
         }
-        div.addEventListener('click', () => move(i));
-        tiles.push(div);
+        // 'index' is the current position (0-8) of this tile/empty space in the grid.
+        div.addEventListener('click', () => moveTile(index));
         game.appendChild(div);
-      }
+      });
     }
 
-    function move(i) {
-      const emptyIndex = tiles.findIndex(t => t.classList.contains('empty'));
-      const validMoves = [i - 1, i + 1, i - 3, i + 3];
+    // 'clickedIndex' is the 0-8 grid position of the tile the user clicked.
+    function moveTile(clickedIndex) {
+      const emptyIndex = currentTileArrangement.indexOf(null);
 
-      if (validMoves.includes(emptyIndex)) {
-        [tiles[i].outerHTML, tiles[emptyIndex].outerHTML] =
-          [tiles[emptyIndex].outerHTML, tiles[i].outerHTML];
-        createTiles();
+      // Determine row and column for clicked and empty tiles
+      const clickedRow = Math.floor(clickedIndex / 3);
+      const clickedCol = clickedIndex % 3;
+      const emptyRow = Math.floor(emptyIndex / 3);
+      const emptyCol = emptyIndex % 3;
+
+      // Check if the clicked tile is adjacent (not diagonally) to the empty space
+      const isAdjacent =
+        (Math.abs(clickedRow - emptyRow) === 1 && clickedCol === emptyCol) || // Same column, row difference is 1
+        (Math.abs(clickedCol - emptyCol) === 1 && clickedRow === emptyRow);   // Same row, column difference is 1
+
+      if (isAdjacent) {
+        // Swap the clicked tile with the empty space in our state array
+        [currentTileArrangement[clickedIndex], currentTileArrangement[emptyIndex]] =
+        [currentTileArrangement[emptyIndex], currentTileArrangement[clickedIndex]];
+
+        createAndRenderTiles(); // Re-render the board with the new arrangement
+
+        // Optional: Check for win condition here
+        // if (isSolved()) { alert("恭喜你，完成了！"); }
       }
     }
 
     function shuffle() {
-      for (let i = 0; i < 100; i++) {
-        const idx = Math.floor(Math.random() * 9);
-        move(idx);
+      // To shuffle, we make a series of random valid moves.
+      // This ensures the puzzle remains solvable.
+      const numberOfShuffles = 100 + Math.floor(Math.random() * 50); // More shuffles for better randomness
+
+      for (let i = 0; i < numberOfShuffles; i++) {
+        const emptyIndex = currentTileArrangement.indexOf(null);
+        const possibleMoves = []; // Stores indices of tiles that can slide into the empty space
+
+        // Determine row and column for the empty space
+        const emptyRow = Math.floor(emptyIndex / 3);
+        const emptyCol = emptyIndex % 3;
+
+        // Check tile to the left of empty
+        if (emptyCol > 0) possibleMoves.push(emptyIndex - 1);
+        // Check tile to the right of empty
+        if (emptyCol < 2) possibleMoves.push(emptyIndex + 1);
+        // Check tile above empty
+        if (emptyRow > 0) possibleMoves.push(emptyIndex - 3);
+        // Check tile below empty
+        if (emptyRow < 2) possibleMoves.push(emptyIndex + 3);
+
+        if (possibleMoves.length > 0) {
+          // Pick a random, valid tile to move into the empty space
+          const tileToMoveIndex = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+          // Perform the swap in the state array
+          [currentTileArrangement[emptyIndex], currentTileArrangement[tileToMoveIndex]] =
+          [currentTileArrangement[tileToMoveIndex], currentTileArrangement[emptyIndex]];
+        }
       }
+      createAndRenderTiles(); // Re-render the board with the shuffled state
     }
 
-    createTiles();
+    // Optional: Function to check if the puzzle is solved
+    function isSolved() {
+        const solvedState = [
+            'tile_0_0.png', 'tile_0_1.png', 'tile_0_2.png',
+            'tile_1_0.png', 'tile_1_1.png', 'tile_1_2.png',
+            'tile_2_0.png', 'tile_2_1.png', null
+        ];
+        for (let i = 0; i < currentTileArrangement.length; i++) {
+            if (currentTileArrangement[i] !== solvedState[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Initial call to display the puzzle when the page loads.
+    createAndRenderTiles();
   </script>
 </body>
 </html>
